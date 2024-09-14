@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  db:
+    container_name: "db"
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - custom
+
+  backend:
+    container_name: "fastapi-backend"
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/postgres
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - custom
+
+networks:
+  custom:
+    driver: bridge
